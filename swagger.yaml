@@ -1,17 +1,25 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "OpenAPI definition",
-    "version": "v0"
+    "title": "Network API",
+    "version": "v1"
   },
   "servers": [
     {
       "url": "http://localhost:8080",
-      "description": "Generated server url"
+      "description": "Local"
+    },
+    {
+      "url": "https://developmentapi.ienterprise.info/newblack",
+      "description": "Dev"
+    },
+    {
+      "url": "https://stagingapi.ienterprise.com/newblack",
+      "description": "Staging"
     }
   ],
   "paths": {
-    "/newblack/device/{storeNumber}": {
+    "/device/{storeNumber}": {
       "get": {
         "tags": [
           "new-black-device-api"
@@ -96,6 +104,12 @@
             "type": "string"
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic"
       }
     }
   }
