@@ -1,1 +1,569 @@
-{"openapi":"3.0.1","info":{"title":"Nightly Jobs","version":"v1"},"servers":[{"url":"http://localhost:8080","description":"Local"},{"url":"https://developmentapi.ienterprise.info/jobs","description":"Dev"},{"url":"https://stagingapi.ienterprise.com/jobs","description":"Staging"}],"paths":{"/schedule/osupdate":{"post":{"tags":["schedule-os-updates-api"],"summary":"Schedules os update for devices","operationId":"scheduleJob","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ScheduleJobPayload"}}},"required":true},"responses":{"500":{"description":"returns error response(success=false,body=null) with messageCodes","content":{"application/json":{"example":{"success":false,"messageCodes":["unknown.error"]}}}},"401":{"description":"Returns unauthorized/forbidden response code"},"200":{"description":"Job has been scheduled successfully","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseScheduleJobDetails"}}}}}}},"/schedule/osupdate/list/{page}/{size}":{"post":{"tags":["schedule-os-updates-api"],"operationId":"getScheduledJobs","parameters":[{"name":"page","in":"path","required":true,"schema":{"type":"integer","format":"int32"}},{"name":"size","in":"path","required":true,"schema":{"type":"integer","format":"int32"}}],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/JobsFilter"}}},"required":true},"responses":{"500":{"description":"returns error response(success=false,body=null) with messageCodes","content":{"application/json":{"example":{"success":false,"messageCodes":["unknown.error"]}}}},"401":{"description":"Returns unauthorized/forbidden response code"},"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponsePageScheduleJobDetails"}}}}}}},"/schedule/osupdate/cancel/{jobUid}":{"post":{"tags":["schedule-os-updates-api"],"operationId":"cancelJob","parameters":[{"name":"jobUid","in":"path","required":true,"schema":{"type":"string"}}],"responses":{"500":{"description":"returns error response(success=false,body=null) with messageCodes","content":{"application/json":{"example":{"success":false,"messageCodes":["unknown.error"]}}}},"401":{"description":"Returns unauthorized/forbidden response code"},"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseBoolean"}}}}}}},"/mock/store/openingTimes":{"post":{"tags":["store-api"],"operationId":"setStoreOpeningTimes","requestBody":{"content":{"application/json":{"schema":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/LocalTime"}}}},"required":true},"responses":{"500":{"description":"returns error response(success=false,body=null) with messageCodes","content":{"application/json":{"example":{"success":false,"messageCodes":["unknown.error"]}}}},"401":{"description":"Returns unauthorized/forbidden response code"},"200":{"description":"OK"}}}},"/schedule/osupdate/csv/{jobsUid}":{"get":{"tags":["schedule-os-updates-api"],"operationId":"downloadCsv","parameters":[{"name":"jobsUid","in":"path","required":true,"schema":{"type":"string"}}],"responses":{"500":{"description":"returns error response(success=false,body=null) with messageCodes","content":{"application/json":{"example":{"success":false,"messageCodes":["unknown.error"]}}}},"401":{"description":"Returns unauthorized/forbidden response code"},"200":{"description":"OK","content":{"*/*":{"schema":{"type":"string","format":"binary"}}}}}}},"/mock/store/times/{storeId}":{"get":{"tags":["store-api"],"operationId":"getStoreTimes","parameters":[{"name":"storeId","in":"path","required":true,"schema":{"type":"string"}}],"responses":{"500":{"description":"returns error response(success=false,body=null) with messageCodes","content":{"application/json":{"example":{"success":false,"messageCodes":["unknown.error"]}}}},"401":{"description":"Returns unauthorized/forbidden response code"},"200":{"description":"OK","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/StoreTime"}}}}}}}}},"components":{"schemas":{"JobDevice":{"required":["countryCode","currentOSVersion","deviceId","deviceUDID","serialNumber","storeNumber","useCase"],"type":"object","properties":{"name":{"type":"string"},"serialNumber":{"type":"string"},"deviceId":{"type":"integer","format":"int64"},"deviceUDID":{"type":"string"},"storeNumber":{"type":"string"},"currentOSVersion":{"type":"string"},"countryCode":{"type":"string"},"city":{"type":"string"},"useCase":{"type":"string"}}},"ScheduleJobPayload":{"required":["newOsVersion","newOsVersionBuildNumber","scheduledDate"],"type":"object","properties":{"uid":{"type":"string"},"scheduledDate":{"type":"string","format":"date"},"newOsVersion":{"type":"string"},"newOsVersionBuildNumber":{"type":"string"},"devices":{"type":"array","items":{"$ref":"#/components/schemas/JobDevice"}}}},"ApiResponseScheduleJobDetails":{"type":"object","properties":{"success":{"type":"boolean"},"messageCodes":{"type":"array","items":{"type":"string"}},"body":{"$ref":"#/components/schemas/ScheduleJobDetails"}}},"ScheduleJobDetails":{"required":["newOsVersion","newOsVersionBuildNumber","scheduledDate"],"type":"object","properties":{"uid":{"type":"string"},"scheduledDate":{"type":"string","format":"date"},"newOsVersion":{"type":"string"},"newOsVersionBuildNumber":{"type":"string"},"devices":{"type":"array","items":{"$ref":"#/components/schemas/JobDevice"}},"status":{"type":"string"}}},"JobsFilter":{"type":"object","properties":{"statuses":{"type":"array","items":{"type":"string","enum":["SCHEDULED","RUNNING","COMPLETED","CANCELLED"]}}}},"ApiResponsePageScheduleJobDetails":{"type":"object","properties":{"success":{"type":"boolean"},"messageCodes":{"type":"array","items":{"type":"string"}},"body":{"$ref":"#/components/schemas/PageScheduleJobDetails"}}},"PageScheduleJobDetails":{"type":"object","properties":{"totalItems":{"type":"integer","format":"int64"},"totalPages":{"type":"integer","format":"int32"},"currentPage":{"type":"integer","format":"int32"},"pageSize":{"type":"integer","format":"int32"},"items":{"type":"array","items":{"$ref":"#/components/schemas/ScheduleJobDetails"}}}},"ApiResponseBoolean":{"type":"object","properties":{"success":{"type":"boolean"},"messageCodes":{"type":"array","items":{"type":"string"}},"body":{"type":"boolean"}}},"LocalTime":{"type":"object","properties":{"hour":{"type":"integer","format":"int32"},"minute":{"type":"integer","format":"int32"},"second":{"type":"integer","format":"int32"},"nano":{"type":"integer","format":"int32"}}},"StoreTime":{"type":"object","properties":{"date":{"type":"string","format":"date"},"dayOfWeek":{"type":"integer","format":"int32"},"openingTime":{"$ref":"#/components/schemas/LocalTime"},"closingTime":{"$ref":"#/components/schemas/LocalTime"}}}},"securitySchemes":{"Oauth":{"type":"http","scheme":"bearer","bearerFormat":"JWT"}}}}
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Nightly Jobs",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local"
+    },
+    {
+      "url": "https://developmentapi.ienterprise.info/nightlyjob",
+      "description": "Dev"
+    },
+    {
+      "url": "https://stagingapi.ienterprise.com/jobs",
+      "description": "Staging"
+    }
+  ],
+  "paths": {
+    "/schedule/osupdate": {
+      "post": {
+        "tags": [
+          "schedule-os-updates-api"
+        ],
+        "summary": "Schedules os update for devices",
+        "operationId": "scheduleJob",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleJobPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Job has been scheduled successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseScheduleJobDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Returns unauthorized/forbidden response code"
+          },
+          "500": {
+            "description": "returns error response(success=false,body=null) with messageCodes",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "messageCodes": [
+                    "unknown.error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/osupdate/list/{page}/{size}": {
+      "post": {
+        "tags": [
+          "schedule-os-updates-api"
+        ],
+        "operationId": "getScheduledJobs",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "size",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobsFilter"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePageScheduleJobDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Returns unauthorized/forbidden response code"
+          },
+          "500": {
+            "description": "returns error response(success=false,body=null) with messageCodes",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "messageCodes": [
+                    "unknown.error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/osupdate/cancel/{jobUid}": {
+      "post": {
+        "tags": [
+          "schedule-os-updates-api"
+        ],
+        "operationId": "cancelJob",
+        "parameters": [
+          {
+            "name": "jobUid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseBoolean"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Returns unauthorized/forbidden response code"
+          },
+          "500": {
+            "description": "returns error response(success=false,body=null) with messageCodes",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "messageCodes": [
+                    "unknown.error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mock/store/openingTimes": {
+      "post": {
+        "tags": [
+          "store-api"
+        ],
+        "operationId": "setStoreOpeningTimes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/LocalTime"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Returns unauthorized/forbidden response code"
+          },
+          "500": {
+            "description": "returns error response(success=false,body=null) with messageCodes",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "messageCodes": [
+                    "unknown.error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/osupdate/csv/{jobsUid}": {
+      "get": {
+        "tags": [
+          "schedule-os-updates-api"
+        ],
+        "operationId": "downloadCsv",
+        "parameters": [
+          {
+            "name": "jobsUid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Returns unauthorized/forbidden response code"
+          },
+          "500": {
+            "description": "returns error response(success=false,body=null) with messageCodes",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "messageCodes": [
+                    "unknown.error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mock/store/times/{storeId}": {
+      "get": {
+        "tags": [
+          "store-api"
+        ],
+        "operationId": "getStoreTimes",
+        "parameters": [
+          {
+            "name": "storeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StoreTime"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Returns unauthorized/forbidden response code"
+          },
+          "500": {
+            "description": "returns error response(success=false,body=null) with messageCodes",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "messageCodes": [
+                    "unknown.error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JobDevice": {
+        "required": [
+          "countryCode",
+          "currentOSVersion",
+          "deviceId",
+          "deviceUDID",
+          "serialNumber",
+          "storeNumber",
+          "useCase"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "serialNumber": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "deviceUDID": {
+            "type": "string"
+          },
+          "storeNumber": {
+            "type": "string"
+          },
+          "currentOSVersion": {
+            "type": "string"
+          },
+          "countryCode": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "useCase": {
+            "type": "string"
+          }
+        }
+      },
+      "ScheduleJobPayload": {
+        "required": [
+          "newOsVersion",
+          "newOsVersionBuildNumber",
+          "scheduledDate"
+        ],
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "string"
+          },
+          "scheduledDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "newOsVersion": {
+            "type": "string"
+          },
+          "newOsVersionBuildNumber": {
+            "type": "string"
+          },
+          "devices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JobDevice"
+            }
+          }
+        }
+      },
+      "ApiResponseScheduleJobDetails": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "body": {
+            "$ref": "#/components/schemas/ScheduleJobDetails"
+          }
+        }
+      },
+      "ScheduleJobDetails": {
+        "required": [
+          "newOsVersion",
+          "newOsVersionBuildNumber",
+          "scheduledDate"
+        ],
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "string"
+          },
+          "scheduledDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "newOsVersion": {
+            "type": "string"
+          },
+          "newOsVersionBuildNumber": {
+            "type": "string"
+          },
+          "devices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JobDevice"
+            }
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "JobsFilter": {
+        "type": "object",
+        "properties": {
+          "statuses": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SCHEDULED",
+                "RUNNING",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            }
+          }
+        }
+      },
+      "ApiResponsePageScheduleJobDetails": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "body": {
+            "$ref": "#/components/schemas/PageScheduleJobDetails"
+          }
+        }
+      },
+      "PageScheduleJobDetails": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "currentPage": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleJobDetails"
+            }
+          }
+        }
+      },
+      "ApiResponseBoolean": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "body": {
+            "type": "boolean"
+          }
+        }
+      },
+      "LocalTime": {
+        "type": "object",
+        "properties": {
+          "hour": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "minute": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "second": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nano": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "StoreTime": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "dayOfWeek": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "openingTime": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "closingTime": {
+            "$ref": "#/components/schemas/LocalTime"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Oauth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
